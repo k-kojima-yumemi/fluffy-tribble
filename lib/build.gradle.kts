@@ -52,14 +52,14 @@ publishing {
     repositories {
         val bucketName = project.findProperty("r2_bucket_name") ?: System.getenv("R2_BUCKET_NAME") ?: ""
         if (bucketName.toString().isNotEmpty()) {
+            val r2AccessKey = (project.findProperty("r2_access_key") ?: System.getenv("R2_ACCESS_KEY") ?: "") as String
+            val r2SecretKey = (project.findProperty("r2_secret_key") ?: System.getenv("R2_SECRET_KEY") ?: "") as String
             maven {
                 name = "R2"
                 url = uri("s3://${bucketName}")
                 credentials(AwsCredentials::class) {
-                    accessKey =
-                        (project.findProperty("r2_access_key") as String?) ?: System.getenv("R2_ACCESS_KEY") ?: ""
-                    secretKey =
-                        (project.findProperty("r2_secret_key") as String?) ?: System.getenv("R2_SECRET_KEY") ?: ""
+                    accessKey = r2AccessKey
+                    secretKey = r2SecretKey
                 }
             }
         }

@@ -72,4 +72,42 @@ resource "cloudflare_r2_bucket" "cloudflare-bucket" {
 }
 ```
 
+`api_token` と `account_id` は上で確認したものを入れてください。
+bucketの名前は適当なものを設定してください。
+locationは5箇所ほど用意されているようです。
+何も入力しないと近い地域のリージョンが選ばれます。
+GDPRなど地理的な制限がある場合は指定する必要があるかなと思います。
 
+Applyすれば作成されます。
+
+# Gradleの設定
+
+## 準備
+
+認証情報として使うのでR2のAccess KeyとSecret Keyを用意してください。
+Tokenの作成をすると一緒に表示されます。
+
+## `build.gradle.kts` の設定
+
+`maven-publish` プラグインを設定し、以下のようにpublishの設定をしました。
+
+```
+publishing {
+    publications {
+        create("mavenJava", MavenPublication::class) {
+            from(components.named("java").get())
+        }
+    }
+    repositories {
+        val bucketName = project.findProperty("r2_bucket_name") ?: System.getenv("R2_BUCKET_NAME") ?: ""
+        maven {
+            name = "R2"
+            url = uri("s3://${bucketName}")
+            credentials(AwsCredentials::class) {
+                accessKey = (project.findProperty("r2_access_key") as String?) ?: System.getenv("R2_ACCESS_KEY") ?: ""
+                secretKey = (project.findProperty("r2_secret_key") as String?) ?: System.getenv("R2_SECRET_KEY") ?: ""
+            }
+        }
+    }
+}
+```
