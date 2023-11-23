@@ -1,7 +1,11 @@
 # CloudFlare R2を使って公開のmavenリポジトリを作る(Gradle)
 
+<img width="100%" src="https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/672609/6d8a7098-9aef-a19a-54fe-83a2d493e033.png" alt="YUMEMI Advent Calendar 2023">
+
 Gradleには標準でS3やCloud Storageをmavenリポジトリとして扱う機能がついているのですが、Google Cloudのライブラリが古すぎて認証に一部問題があるようです。
 GitHubからOIDCを使って接続しようと思ったら古いライブラリを使っているせいで認証できませんでした。
+Google CloudならArtifact Registry使えばいいのですが、無料枠が0.5GBまでで転送料もかかることからもっと安く済む手段を探します。
+マネージドなサービスであることの良さはもちろんありますが、今回はよりコストを抑えることを目的としています。
 
 ということでCloudFlare R2をmavenリポジトリとして運用していきます。
 
@@ -77,6 +81,7 @@ bucketの名前は適当なものを設定してください。
 locationは5箇所ほど用意されているようです。
 何も入力しないと近い地域のリージョンが選ばれます。
 GDPRなど地理的な制限がある場合は指定する必要があるかなと思います。
+locationについては https://developers.cloudflare.com/r2/reference/data-location/ で説明されています。
 
 Applyすれば作成されます。
 
@@ -111,3 +116,29 @@ publishing {
     }
 }
 ```
+
+`r2_bucket_name` にはBucketの名前、 `r2_access_key` と `r2_secret_key` にはそれぞれR2のAccess KeyとSecret Keyを設定しています。
+R2はS3互換なので、URLにはS3のスキーマを設定しています。
+
+https://docs.gradle.org/current/userguide/declaring_repositories.html#sec:supported_transport_protocols に記述例が載っています。
+
+# R2へのPublish
+
+`build.gradle.kts` の設定ではS3のスキーマを指定していましたが、そのままではAWSのエンドポイントにアクセスしてしまいます。
+そのためR2専用のエンドポイントにつなぐよう、Publishのコマンド実行時に設定します。
+
+https://developers.cloudflare.com/r2/api/s3/tokens/ でエンドポイントの説明がされています。
+通常であれば `https://<ACCOUNT_ID>.r2.cloudflarestorage.com` の形式のエンドポイントを使用します。
+EUのGDPRに対応するエンドポイントも用意されています。
+
+以下のコマンドでPublishします。
+
+```bash
+./gradlew -Dorg.gradle.s3.endpoint=<EndPoint URL> publish
+```
+
+`-Dorg.gradle.s3.endpoint` がGradleで使われるS3のエンドポイントを指定するためのキーです。
+https://docs.gradle.org/current/userguide/declaring_repositories.html#sec:s3-repositories にプロパティについての記述があります。
+
+Publishが完了すれば以下のようにファイルがR2にアップロードされていることが確認できます。
+![](Cloudflare_uploaded.png)
