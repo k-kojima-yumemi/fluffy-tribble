@@ -17,3 +17,16 @@ resource "cloudflare_r2_bucket" "cloudflare-bucket" {
   # See https://developers.cloudflare.com/r2/reference/data-location for location
   # location   = "apac"
 }
+
+data "cloudflare_zone" "zone" {
+  name = var.domain
+}
+
+resource "cloudflare_record" "r2-domain" {
+  name    = cloudflare_r2_bucket.cloudflare-bucket.name
+  type    = "CNAME"
+  zone_id = data.cloudflare_zone.zone.id
+  proxied = true
+  ttl     = 1
+  value   = "public.r2.dev"
+}

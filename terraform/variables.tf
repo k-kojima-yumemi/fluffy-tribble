@@ -10,3 +10,7 @@ variable "bucket_name" {
   type = string
   default = "koma-maven"
 }
+
+variable "domain" {
+  type = string
+}

@@ -34,6 +34,7 @@ CloudFlareのアカウントを用意し、課金の設定をしてください�
 # R2 Bucketの作成
 
 ## Account IDとTokenの確認
+
 まずR2にBucketを作成するためのAccount IDの確認とTokenの作成をします。
 R2のページにアクセスして右側にAccount IDがあるのでメモしておきます。
 ![](Cloudflare_R2.png)
@@ -50,6 +51,14 @@ TokenやAccess Keyなどはこの画面でしか確認できないため、忘�
 :::
 
 今回はこのAccess KeyとSecret KeyでGradleからアップロードします。
+
+Tokenの作成自体は https://dash.cloudflare.com/profile/api-tokens からでも行えます。
+![](Cloudflare_token_myprofile.png)
+権限として、Worker R2 Storageを選択し、Editの権限とすることでR2の操作ができます。
+ここから作成した場合には他の権限を付与することもできます。
+R2のページから作成したTokenもここに表示されるので、権限を追加することもできます。
+
+S3互換のAccess KeyとSecret KeyはR2のページからTokenを作成した場合のみ確認できるので、S3クライアントで使うTokenはR2のページから作成してください。
 
 ## Bucketの作成
 
@@ -142,3 +151,94 @@ https://docs.gradle.org/current/userguide/declaring_repositories.html#sec:s3-rep
 
 Publishが完了すれば以下のようにファイルがR2にアップロードされていることが確認できます。
 ![](Cloudflare_uploaded.png)
+
+# R2の公開
+
+R2は2種類の方法でパブリックアクセスを有効化できます。
+
+1. r2.devのサブドメインでの公開
+2. 独自ドメインを使用する
+
+## r2.devのサブドメインでの公開
+
+https://developers.cloudflare.com/r2/buckets/public-buckets/#enable-managed-public-access
+
+こちらの方法はレートリミットなどの制限があるため、本番環境ではお勧めしないと注意書きがされています。
+有効にすると `https://pub-<Bucket ID>.r2.dev` の配下で公開することができます。
+Bucketの設定画面から、以下のところで有効にしたりURLの確認ができます。
+![](Cloudflare_managed_access.png)
+
+R2のAPIを調べましたが、APIでサブドメインでの公開を有効にすることはできないようです。
+https://developers.cloudflare.com/api/operations/r2-create-bucket
+
+## 独自ドメイン
+
+https://developers.cloudflare.com/r2/buckets/public-buckets/#custom-domains
+
+この方法ではドメインのDNSがCloudflareで管理されている必要があります。
+こちらの方法ではCloudflareのキャッシュやアクセス制限を入れることができます。
+
+Bucketの設定画面から、以下のところで有効にできます。
+![](Cloudflare_custom_access.png)
+有効にするとドメインのレコード一覧に表示されるようになります。
+![](Cloudflare_record.png)
+レコードのAPIからR2のドメインのデータを取得すると以下のようになります。
+
+```json
+{
+  "result": {
+    "id": "ID",
+    "zone_id": "ZONE",
+    "zone_name": "example.com",
+    "name": "koma-maven.example.com",
+    "type": "CNAME",
+    "content": "public.r2.dev",
+    "proxiable": true,
+    "proxied": true,
+    "ttl": 1,
+    "locked": false,
+    "meta": {
+      "auto_added": false,
+      "managed_by_apps": false,
+      "managed_by_argo_tunnel": false,
+      "r2_bucket": "koma-maven",
+      "read_only": true,
+      "source": "primary"
+    },
+    "comment": null,
+    "tags": [],
+    "created_on": "2023-11-23T14:09:13.132284Z",
+    "modified_on": "2023-11-23T14:09:13.132284Z"
+  },
+  "success": true,
+  "errors": [],
+  "messages": []
+}
+```
+
+向き先が `public.r2.dev` である、CNAMEのレコードとして作成されているようです。
+`meta` の中にどのBucketであるか示す `r2_bucket` の項目があります。
+
+レコードの作成APIにはmetaを設定する項目はなく、Terraformの `cloudflare_record` でも読み取り専用になってます。
+よってR2を公開設定に自動で変更するのは難しいのではないかと思います。
+
+`cloudflare_record` の、以下のリソースとしてimportすることはできます。
+
+```terraform
+resource "cloudflare_record" "r2-domain" {
+  name    = cloudflare_r2_bucket.cloudflare-bucket.name
+  type    = "CNAME"
+  zone_id = data.cloudflare_zone.zone.id
+  proxied = true
+  ttl     = 1
+  value   = "public.r2.dev"
+}
+```
+
+しかしmetaは読み取り専用で変更できないため、管理する意義はほとんどありません。
+
+https://developers.cloudflare.com/api/operations/dns-records-for-a-zone-create-dns-record
+
+Bucketのファイルにアクセスする際には、ドメインの後にファイルのパスを繋げたURLを使用します。
+`jp/co/yumemi/koma/lib/maven-metadata.xml`
+のファイルへは `https://koma-maven.example.com/jp/co/yumemi/koma/lib/maven-metadata.xml` でアクセスできます。
