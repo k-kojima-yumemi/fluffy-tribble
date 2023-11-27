@@ -9,6 +9,10 @@ Google CloudならArtifact Registry使えばいいのですが、無料枠が0.5
 
 ということでCloudflare R2をmavenリポジトリとして運用していきます。
 
+今回検証に利用したコードは以下のリポジトリにあります。
+
+https://github.com/k-kojima-yumemi/fluffy-tribble
+
 # Cloudflare R2とは
 
 https://www.cloudflare.com/ja-jp/developer-platform/r2/
@@ -37,10 +41,10 @@ Cloudflareのアカウントを用意し、課金の設定をしてください�
 
 まずR2にBucketを作成するためのAccount IDの確認とTokenの作成をします。
 R2のページにアクセスして右側にAccount IDがあるのでメモしておきます。
-![](Cloudflare_R2.png)
+![](https://raw.githubusercontent.com/k-kojima-yumemi/fluffy-tribble/main/article/Cloudflare_R2.png)
 その下にあるManage R2 API TokenからTokenの作成ができます。
 Create Tokenと進み、以下のようにAdmin Read & Writeを選択して権限設定を行います。
-![](Cloudflare_token.png)
+![](https://raw.githubusercontent.com/k-kojima-yumemi/fluffy-tribble/main/article/Cloudflare_token.png)
 他の設定項目はそのままで進めます。
 次の画面に進むとTokenが作成されます。
 またその下にAccess KeyとSecret Keyも表示されます。
@@ -53,7 +57,7 @@ TokenやAccess Keyなどはこの画面でしか確認できないため、忘�
 今回はこのAccess KeyとSecret KeyでGradleからアップロードします。
 
 Tokenの作成自体は https://dash.cloudflare.com/profile/api-tokens からでも行えます。
-![](Cloudflare_token_myprofile.png)
+![](https://raw.githubusercontent.com/k-kojima-yumemi/fluffy-tribble/main/article/Cloudflare_token_myprofile.png)
 権限として、Worker R2 Storageを選択し、Editの権限とすることでR2の操作ができます。
 ここから作成した場合には他の権限を付与することもできます。
 R2のページから作成したTokenもここに表示されるので、権限を追加することもできます。
@@ -150,11 +154,11 @@ EUのGDPRに対応するエンドポイントも用意されています。
 https://docs.gradle.org/current/userguide/declaring_repositories.html#sec:s3-repositories にプロパティについての記述があります。
 
 Publishが完了すれば以下のようにファイルがR2にアップロードされていることが確認できます。
-![](Cloudflare_uploaded.png)
+![](https://raw.githubusercontent.com/k-kojima-yumemi/fluffy-tribble/main/article/Cloudflare_uploaded.png)
 
 :::note warn
 既存のバージョンと同じバージョンでPublishしてしまうとエラーなしにファイルが更新されてしまいます。
-別の仕組みで上書きしないようにするか、必ずインクリメントされる仕組みを使ってバージョン管理するようにしましょう。
+別の仕組みで上書きしないようにするか、必ずバージョンがインクリメントされる仕組みを使うようにしましょう。
 :::
 
 # R2の公開
@@ -171,7 +175,7 @@ https://developers.cloudflare.com/r2/buckets/public-buckets/#enable-managed-publ
 こちらの方法はレートリミットなどの制限があるため、本番環境ではお勧めしないと注意書きがされています。
 有効にすると `https://pub-<Bucket ID>.r2.dev` の配下で公開することができます。
 Bucketの設定画面から、以下のところで有効にしたりURLの確認ができます。
-![](Cloudflare_managed_access.png)
+![](https://raw.githubusercontent.com/k-kojima-yumemi/fluffy-tribble/main/article/Cloudflare_managed_access.png)
 
 R2のAPIを調べましたが、APIでサブドメインでの公開を有効にすることはできないようです。
 https://developers.cloudflare.com/api/operations/r2-create-bucket
@@ -184,9 +188,9 @@ https://developers.cloudflare.com/r2/buckets/public-buckets/#custom-domains
 こちらの方法ではCloudflareのキャッシュやアクセス制限を入れることができます。
 
 Bucketの設定画面から、以下のところで有効にできます。
-![](Cloudflare_custom_access.png)
+![](https://raw.githubusercontent.com/k-kojima-yumemi/fluffy-tribble/main/article/Cloudflare_custom_access.png)
 有効にするとドメインのレコード一覧に表示されるようになります。
-![](Cloudflare_record.png)
+![](https://raw.githubusercontent.com/k-kojima-yumemi/fluffy-tribble/main/article/Cloudflare_record.png)
 レコードのAPIからR2のドメインのデータを取得すると以下のようになります。
 
 ```json
