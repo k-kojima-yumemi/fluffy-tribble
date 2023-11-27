@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "jp.co.yumemi.koma"
-version = "1.1-SNAPSHOT"
+version = "1.2"
 
 repositories {
     // Use Maven Central for resolving dependencies.

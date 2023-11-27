@@ -14,3 +14,4 @@ plugins {
 
 rootProject.name = "fluffy-tribble"
 include("lib")
+include("use")

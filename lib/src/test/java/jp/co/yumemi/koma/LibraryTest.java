@@ -4,17 +4,33 @@
 package jp.co.yumemi.koma;
 
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class LibraryTest {
-    @Test void someLibraryMethodReturnsTrue() {
+    @Test
+    void someLibraryMethodReturnsTrue() {
         Library classUnderTest = new Library();
         assertTrue(classUnderTest.someLibraryMethod(), "someLibraryMethod should return 'true'");
     }
 
     @Test
-    void helloMessage() {
+    void instance() {
         var lib = new Library();
         assertNotNull(lib);
+    }
+
+    @Test
+    void helloMessage() {
+        var lib = new Library();
+        var message = lib.hello("me");
+        assertEquals("Hello me!", message);
+    }
+
+    @Test
+    void hiMessage() {
+        var lib = new Library();
+        var message = lib.hi("me");
+        assertEquals("Hi me!", message);
     }
 }

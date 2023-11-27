@@ -1,19 +1,19 @@
-# CloudFlare R2を使って公開のmavenリポジトリを作る(Gradle)
+# Cloudflare R2を使って公開のmavenリポジトリを作る(Gradle)
 
-<img width="100%" src="https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/672609/6d8a7098-9aef-a19a-54fe-83a2d493e033.png" alt="YUMEMI Advent Calendar 2023">
+<img src="https://qiita-image-store.s3.ap-northeast-1.amazonaws.com/0/672609/6d8a7098-9aef-a19a-54fe-83a2d493e033.png" alt="YUMEMI New Grad Advent Calendar 2023">
 
 Gradleには標準でS3やCloud Storageをmavenリポジトリとして扱う機能がついているのですが、Google Cloudのライブラリが古すぎて認証に一部問題があるようです。
 GitHubからOIDCを使って接続しようと思ったら古いライブラリを使っているせいで認証できませんでした。
 Google CloudならArtifact Registry使えばいいのですが、無料枠が0.5GBまでで転送料もかかることからもっと安く済む手段を探します。
 マネージドなサービスであることの良さはもちろんありますが、今回はよりコストを抑えることを目的としています。
 
-ということでCloudFlare R2をmavenリポジトリとして運用していきます。
+ということでCloudflare R2をmavenリポジトリとして運用していきます。
 
-# CloudFlare R2とは
+# Cloudflare R2とは
 
 https://www.cloudflare.com/ja-jp/developer-platform/r2/
 
-CloudFlareの公開しているS3互換のあるオブジェクトストレージです。
+Cloudflareの公開しているS3互換のあるオブジェクトストレージです。
 S3などと比べて無料枠が大きく、比較的コストの低いストレージになります。
 S3互換であるため既存のAWS SDKから操作ができます。R2専用のライブラリを使用しなくてもよい部分も魅力的です。
 課金は使用したストレージ容量と書き込みアクセス、読み取りアクセスの回数でなされます。
@@ -28,7 +28,7 @@ https://developers.cloudflare.com/r2/pricing/
 
 # 事前準備
 
-CloudFlareのアカウントを用意し、課金の設定をしてください。
+Cloudflareのアカウントを用意し、課金の設定をしてください。
 無料枠の範囲内で使用していれば課金されることはありませんが、R2を使用するためには設定が必要です。
 
 # R2 Bucketの作成
@@ -105,7 +105,7 @@ Tokenの作成をすると一緒に表示されます。
 
 `maven-publish` プラグインを設定し、以下のようにpublishの設定をしました。
 
-```
+```kotlin
 publishing {
     publications {
         create("mavenJava", MavenPublication::class) {
@@ -118,8 +118,8 @@ publishing {
             name = "R2"
             url = uri("s3://${bucketName}")
             credentials(AwsCredentials::class) {
-                accessKey = (project.findProperty("r2_access_key") as String?) ?: System.getenv("R2_ACCESS_KEY") ?: ""
-                secretKey = (project.findProperty("r2_secret_key") as String?) ?: System.getenv("R2_SECRET_KEY") ?: ""
+                accessKey = (project.findProperty("r2_access_key") ?: System.getenv("R2_ACCESS_KEY") ?: "") as String
+                secretKey = (project.findProperty("r2_secret_key") ?: System.getenv("R2_SECRET_KEY") ?: "") as String
             }
         }
     }
@@ -151,6 +151,11 @@ https://docs.gradle.org/current/userguide/declaring_repositories.html#sec:s3-rep
 
 Publishが完了すれば以下のようにファイルがR2にアップロードされていることが確認できます。
 ![](Cloudflare_uploaded.png)
+
+:::note warn
+既存のバージョンと同じバージョンでPublishしてしまうとエラーなしにファイルが更新されてしまいます。
+別の仕組みで上書きしないようにするか、必ずインクリメントされる仕組みを使ってバージョン管理するようにしましょう。
+:::
 
 # R2の公開
 
@@ -242,3 +247,22 @@ https://developers.cloudflare.com/api/operations/dns-records-for-a-zone-create-d
 Bucketのファイルにアクセスする際には、ドメインの後にファイルのパスを繋げたURLを使用します。
 `jp/co/yumemi/koma/lib/maven-metadata.xml`
 のファイルへは `https://koma-maven.example.com/jp/co/yumemi/koma/lib/maven-metadata.xml` でアクセスできます。
+
+# Gradleからの参照
+
+上の手順で定義したURLを設定するだけです。
+
+```kotlin
+repositories {
+    maven {
+        name = "R2"
+        url = uri("https://koma-maven.example.com/")
+    }
+}
+
+dependencies {
+    implementation("jp.co.yumemi.koma:lib:1.1-SNAPSHOT")
+}
+```
+
+のように指定することでR2に公開したファイルを使えます。
