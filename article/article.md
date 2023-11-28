@@ -161,6 +161,22 @@ Publishが完了すれば以下のようにファイルがR2にアップロー�
 別の仕組みで上書きしないようにするか、必ずバージョンがインクリメントされる仕組みを使うようにしましょう。
 :::
 
+## `gradle.properties` の設定
+
+上記の設定で必要なキーをまとめると以下のようになります。
+
+```properties
+r2_bucket_name=koma-maven
+r2_access_key=<r2_access_key>
+r2_secret_key=<r2_secret_key>
+r2_maven_url=https://koma-maven.example.com
+systemProp.org.gradle.s3.endpoint=https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+```
+
+:::note info
+`systemProp.org.gradle.s3.endpoint` を設定することで `-Dorg.gradle.s3.endpoint` を毎回指定する必要がなくなります。
+:::
+
 # R2の公開
 
 R2は2種類の方法でパブリックアクセスを有効化できます。
