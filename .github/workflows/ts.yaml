@@ -1,0 +1,20 @@
+name: TypeScript check
+on:
+  push:
+    paths:
+      - 'workers/**'
+      - '.github/workflows/ts.yaml'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install
+        working-directory: workers
+      - run: npx prettier --check 'src/**/*.{ts,tsx}'
+        working-directory: workers

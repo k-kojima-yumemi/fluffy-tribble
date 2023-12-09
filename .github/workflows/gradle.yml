@@ -2,6 +2,10 @@ name: Java CI with Gradle
 
 on:
   push:
+    paths:
+      - '**/*.java'
+      - '**/*.kts'
+      - '.github/workflows/gradle.yml'
 
 permissions:
   contents: read
