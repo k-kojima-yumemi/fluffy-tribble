@@ -14,3 +14,8 @@ variable "bucket_name" {
 variable "domain" {
   type = string
 }
+
+variable "worker_name" {
+  type    = string
+  default = "koma-maven-worker"
+}
