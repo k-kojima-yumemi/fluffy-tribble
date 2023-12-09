@@ -2,6 +2,7 @@
   "scripts": {
     "dev": "wrangler dev src/index.tsx",
     "deploy": "wrangler deploy --minify src/index.tsx",
+    "deploy:dry": "wrangler deploy --dry-run --outdir dist --minify src/index.tsx",
     "format": "npx prettier --write 'src/**/*.{ts,tsx}'"
   },
   "dependencies": {
