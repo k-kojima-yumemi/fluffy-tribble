@@ -9,10 +9,14 @@ public class Library {
     }
 
     public String hello(String name) {
-        return "Hello %s!".formatted(name);
+        return "Hello %s in %s!".formatted(name, version());
     }
 
     public String hi(String name) {
-        return "Hi %s!".formatted(name);
+        return "Hi %s in %s!".formatted(name, version());
+    }
+
+    static String version() {
+        return "1.3";
     }
 }

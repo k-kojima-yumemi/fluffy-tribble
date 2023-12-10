@@ -24,13 +24,13 @@ class LibraryTest {
     void helloMessage() {
         var lib = new Library();
         var message = lib.hello("me");
-        assertEquals("Hello me!", message);
+        assertEquals("Hello me in %s!".formatted(Library.version()), message);
     }
 
     @Test
     void hiMessage() {
         var lib = new Library();
         var message = lib.hi("me");
-        assertEquals("Hi me!", message);
+        assertEquals("Hi me in %s!".formatted(Library.version()), message);
     }
 }
