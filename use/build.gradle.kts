@@ -1,5 +1,10 @@
 plugins {
     id("java")
+    id("application")
+}
+
+application {
+    mainClass = "jp.co.yumemi.koma.UseLibrary"
 }
 
 repositories {
@@ -10,11 +15,10 @@ repositories {
             url = uri(r2Url)
         }
     }
-    mavenCentral()
 }
 
 dependencies {
     if (project.hasProperty("r2_maven_url")) {
-        implementation(group = "jp.co.yumemi.koma", name = "lib", version = "1.1-SNAPSHOT")
+        implementation(group = "jp.co.yumemi.koma", name = "lib", version = "1.3")
     }
 }
