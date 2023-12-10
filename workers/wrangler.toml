@@ -12,6 +12,7 @@ workers_dev = false
 [[r2_buckets]]
 binding = "MAVEN_BUCKET"
 bucket_name = "koma-maven"
+preview_bucket_name = "koma-maven"
 
 # [[d1_databases]]
 # binding = "DB"
