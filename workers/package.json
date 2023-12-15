@@ -6,7 +6,7 @@
     "format": "npx prettier --write 'src/**/*.{ts,tsx}'"
   },
   "dependencies": {
-    "hono": "^3.10.2"
+    "hono": "^3.11.7"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230914.0",
